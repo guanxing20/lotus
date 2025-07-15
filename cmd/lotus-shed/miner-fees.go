@@ -228,6 +228,25 @@ var minerFeesCmd = &cli.Command{
 							params := ""
 							var has bool
 
+							// Implement top-down filtering based on expected cron execution flow
+							switch depth {
+							case 0:
+								// At depth 0: SystemActorAddr (f00) -> CronActorAddr (f03) method 2 (EpochTick)
+								if !(trace.Msg.From == builtin.SystemActorAddr && trace.Msg.To == builtin.CronActorAddr && trace.Msg.Method == 2) {
+									return "", false, nil
+								}
+							case 1:
+								// At depth 1: CronActorAddr (f03) -> StoragePowerActorAddr (f04) method 5 (OnEpochTickEnd)
+								if !(trace.Msg.From == builtin.CronActorAddr && trace.Msg.To == power.Address && trace.Msg.Method == 5) {
+									return "", false, nil
+								}
+							case 2:
+								// At depth 2: StoragePowerActorAddr (f04) -> miner actors method 12 (OnDeferredCronEvent)
+								if !(trace.Msg.From == power.Address && trace.Msg.Method == 12) {
+									return "", false, nil
+								}
+							}
+
 							if trace.Msg.From == minerAddr || trace.Msg.To == minerAddr {
 								has = true // involves our miner
 
@@ -511,6 +530,25 @@ var minerFeesInspect = &cli.Command{
 			cronMinerCalls := make(map[address.Address]struct{})
 			var traceBurns func(depth int, trace types.ExecutionTrace, thisExecCronMiner *minerBurn) error
 			traceBurns = func(depth int, trace types.ExecutionTrace, thisExecCronMiner *minerBurn) error {
+				// Implement top-down filtering based on expected cron execution flow
+				switch depth {
+				case 0:
+					// At depth 0: SystemActorAddr (f00) -> CronActorAddr (f03) method 2 (EpochTick)
+					if !(trace.Msg.From == builtin.SystemActorAddr && trace.Msg.To == builtin.CronActorAddr && trace.Msg.Method == 2) {
+						return nil
+					}
+				case 1:
+					// At depth 1: CronActorAddr (f03) -> StoragePowerActorAddr (f04) method 5 (OnEpochTickEnd)
+					if !(trace.Msg.From == builtin.CronActorAddr && trace.Msg.To == power.Address && trace.Msg.Method == 5) {
+						return nil
+					}
+				case 2:
+					// At depth 2: StoragePowerActorAddr (f04) -> miner actors method 12 (OnDeferredCronEvent)
+					if !(trace.Msg.From == power.Address && trace.Msg.Method == 12) {
+						return nil
+					}
+				}
+
 				if trace.Msg.From == power.Address && trace.Msg.Method == 12 {
 					// cron call to miner
 					if thisExecCronMiner != nil {
@@ -525,21 +563,30 @@ var minerFeesInspect = &cli.Command{
 					}
 					cronParams = &p
 
-					fee, penalty, err := inspectMiner(trace.Msg.To)
-					if err != nil {
-						return xerrors.Errorf("inspecting miner: %w", err)
-					}
 					thisExecCronMiner = &minerBurn{
 						addr:    trace.Msg.To,
 						burn:    big.Zero(),
-						fee:     fee,
-						penalty: penalty,
+						fee:     big.Zero(),
+						penalty: big.Zero(),
 					}
 					burns = append(burns, thisExecCronMiner)
 					cronMinerCalls[trace.Msg.To] = struct{}{}
 				} else if thisExecCronMiner != nil && trace.Msg.From == thisExecCronMiner.addr && trace.Msg.To == burnAddr {
 					// TODO: handle multiple burn? Shouldn't happen but maybe it should be checked?
 					thisExecCronMiner.burn = trace.Msg.Value
+
+					// If we have a burn, we can inspect the miner for fees and penalties.
+					if thisExecCronMiner.burn.IsZero() {
+						return nil
+					}
+
+					fee, penalty, err := inspectMiner(trace.Msg.From)
+					if err != nil {
+						return xerrors.Errorf("inspecting miner: %w", err)
+					}
+
+					thisExecCronMiner.fee = fee
+					thisExecCronMiner.penalty = penalty
 				}
 
 				for _, st := range trace.Subcalls {

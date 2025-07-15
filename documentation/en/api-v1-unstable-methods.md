@@ -92,6 +92,7 @@
   * [F3GetLatestCertificate](#F3GetLatestCertificate)
   * [F3GetManifest](#F3GetManifest)
   * [F3GetOrRenewParticipationTicket](#F3GetOrRenewParticipationTicket)
+  * [F3GetPowerTableByInstance](#F3GetPowerTableByInstance)
   * [F3GetProgress](#F3GetProgress)
   * [F3IsRunning](#F3IsRunning)
   * [F3ListParticipants](#F3ListParticipants)
@@ -3060,13 +3061,10 @@ Inputs: `null`
 Response:
 ```json
 {
-  "Pause": false,
   "ProtocolVersion": 0,
   "InitialInstance": 0,
   "BootstrapEpoch": 0,
   "NetworkName": "",
-  "ExplicitPower": null,
-  "IgnoreECPower": false,
   "InitialPowerTable": null,
   "CommitteeLookback": 0,
   "CatchUpAlignment": 0,
@@ -3156,6 +3154,30 @@ Inputs:
 ```
 
 Response: `"Bw=="`
+
+### F3GetPowerTableByInstance
+F3GetPowerTableByInstance returns the power table (committee) used to validate the specified instance.
+
+
+Perms: read
+
+Inputs:
+```json
+[
+  42
+]
+```
+
+Response:
+```json
+[
+  {
+    "ID": 1000,
+    "Power": "0",
+    "PubKey": "Bw=="
+  }
+]
+```
 
 ### F3GetProgress
 F3GetProgress returns the progress of the current F3 instance in terms of instance ID, round and phase.
@@ -4815,7 +4837,7 @@ Response:
 ```
 
 ### MsigCancelTxnHash
-MsigCancel cancels a previously-proposed multisig message
+MsigCancelTxnHash cancels a previously-proposed multisig message
 It takes the following params: <multisig address>, <proposed transaction ID>, <recipient address>, <value to transfer>,
 <sender address of the cancel msg>, <method to call in the proposed message>, <params to include in the proposed message>
 
@@ -6384,7 +6406,7 @@ Perms: read
 Inputs:
 ```json
 [
-  25
+  27
 ]
 ```
 
@@ -6399,7 +6421,7 @@ Perms: read
 Inputs:
 ```json
 [
-  25
+  27
 ]
 ```
 
@@ -7361,7 +7383,8 @@ Response:
     "UpgradeWaffleHeight": 10101,
     "UpgradeTuktukHeight": 10101,
     "UpgradeTeepHeight": 10101,
-    "UpgradeTockHeight": 10101
+    "UpgradeTockHeight": 10101,
+    "UpgradeXxHeight": 10101
   },
   "Eip155ChainID": 123,
   "GenesisTimestamp": 42
@@ -8409,7 +8432,7 @@ Inputs:
 ]
 ```
 
-Response: `25`
+Response: `27`
 
 ### StateReadState
 StateReadState returns the indicated actor's state.
