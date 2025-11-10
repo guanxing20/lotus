@@ -8,7 +8,7 @@ USAGE:
    lotus-miner [global options] command [command options]
 
 VERSION:
-   1.33.2-dev
+   v1.34.1-dev
 
 COMMANDS:
    init     Initialize a lotus miner repo
@@ -48,7 +48,7 @@ NAME:
    lotus-miner init - Initialize a lotus miner repo
 
 USAGE:
-   lotus-miner init command [command options]
+   lotus-miner init [command options]
 
 COMMANDS:
    restore  Initialize a lotus miner repo from a backup
@@ -68,6 +68,7 @@ OPTIONS:
    --gas-premium value                                        set gas premium for initialization messages in AttoFIL (default: "0")
    --from value                                               select which address to send actor creation message from
    --confidence value                                         number of block confirmations to wait for (default: 5)
+   --deposit-margin-factor value                              Multiplier (>=1.0) to scale the suggested deposit for on-chain variance (e.g. 1.01 adds 1%) (default: 1.01)
    --help, -h                                                 show help
 ```
 
@@ -124,7 +125,7 @@ NAME:
    lotus-miner config - Manage node config
 
 USAGE:
-   lotus-miner config command [command options]
+   lotus-miner config [command options]
 
 COMMANDS:
    default  Print default node config
@@ -205,7 +206,10 @@ NAME:
    lotus-miner actor - manipulate the miner actor
 
 USAGE:
-   lotus-miner actor command [command options]
+   lotus-miner actor [command options]
+
+CATEGORY:
+   CHAIN
 
 COMMANDS:
    set-addresses, set-addrs    set addresses that your miner can be publicly dialed on
@@ -253,6 +257,11 @@ USAGE:
 
 OPTIONS:
    --confidence value  number of block confirmations to wait for (default: 5)
+   --from value        specify where to send the message from (any address)
+   --max-deals value   the maximum number of deals contained in each message (default: 50)
+   --skip-wait-msg     skip to check the message status (default: false)
+   --all-deals         settle all deals. only expired deals are calculated by default (default: false)
+   --really-do-it      Actually send transaction performing the action (default: false)
    --help, -h          show help
 ```
 
@@ -320,7 +329,7 @@ NAME:
    lotus-miner actor control - Manage control addresses
 
 USAGE:
-   lotus-miner actor control command [command options]
+   lotus-miner actor control [command options]
 
 COMMANDS:
    list     Get currently set control addresses
@@ -442,7 +451,10 @@ NAME:
    lotus-miner info - Print miner info
 
 USAGE:
-   lotus-miner info command [command options]
+   lotus-miner info [command options]
+
+CATEGORY:
+   CHAIN
 
 COMMANDS:
    all      dump all related miner info
@@ -474,7 +486,10 @@ NAME:
    lotus-miner sectors - interact with sector store
 
 USAGE:
-   lotus-miner sectors command [command options]
+   lotus-miner sectors [command options]
+
+CATEGORY:
+   STORAGE
 
 COMMANDS:
    status                Get the seal status of a sector by its number
@@ -528,7 +543,7 @@ NAME:
    lotus-miner sectors list - List sectors
 
 USAGE:
-   lotus-miner sectors list command [command options]
+   lotus-miner sectors list [command options]
 
 COMMANDS:
    upgrade-bounds  Output upgrade bounds for available sectors
@@ -609,7 +624,7 @@ NAME:
    lotus-miner sectors numbers - manage sector number assignments
 
 USAGE:
-   lotus-miner sectors numbers command [command options]
+   lotus-miner sectors numbers [command options]
 
 COMMANDS:
    info          view sector assigner state
@@ -749,7 +764,7 @@ NAME:
    lotus-miner sectors terminate - Terminate sector on-chain then remove (WARNING: This means losing power and collateral for the removed sector)
 
 USAGE:
-   lotus-miner sectors terminate command [command options] <sectorNum>
+   lotus-miner sectors terminate [command options] <sectorNum>
 
 COMMANDS:
    flush    Send a terminate message if there are sectors queued for termination
@@ -876,7 +891,7 @@ NAME:
    lotus-miner sectors batching - manage batch sector operations
 
 USAGE:
-   lotus-miner sectors batching command [command options]
+   lotus-miner sectors batching [command options]
 
 COMMANDS:
    commit     list sectors waiting in commit batch queue
@@ -964,7 +979,10 @@ NAME:
    lotus-miner proving - View proving information
 
 USAGE:
-   lotus-miner proving command [command options]
+   lotus-miner proving [command options]
+
+CATEGORY:
+   STORAGE
 
 COMMANDS:
    info            View current state information
@@ -1073,7 +1091,7 @@ NAME:
    lotus-miner proving compute - Compute simulated proving tasks
 
 USAGE:
-   lotus-miner proving compute command [command options]
+   lotus-miner proving compute [command options]
 
 COMMANDS:
    windowed-post, window-post  Compute WindowPoSt for a specific deadline
@@ -1121,7 +1139,10 @@ NAME:
    lotus-miner storage - manage sector storage
 
 USAGE:
-   lotus-miner storage command [command options]
+   lotus-miner storage [command options]
+
+CATEGORY:
+   STORAGE
 
 DESCRIPTION:
    Sectors can be stored across many filesystem paths. These
@@ -1221,7 +1242,7 @@ NAME:
    lotus-miner storage list - list local storage paths
 
 USAGE:
-   lotus-miner storage list command [command options]
+   lotus-miner storage list [command options]
 
 COMMANDS:
    sectors  get list of all sector files
@@ -1291,7 +1312,10 @@ NAME:
    lotus-miner sealing - interact with sealing pipeline
 
 USAGE:
-   lotus-miner sealing command [command options]
+   lotus-miner sealing [command options]
+
+CATEGORY:
+   STORAGE
 
 COMMANDS:
    jobs        list running jobs
@@ -1381,7 +1405,10 @@ NAME:
    lotus-miner auth - Manage RPC permissions
 
 USAGE:
-   lotus-miner auth command [command options]
+   lotus-miner auth [command options]
+
+CATEGORY:
+   DEVELOPER
 
 COMMANDS:
    create-token  Create token
@@ -1427,7 +1454,10 @@ NAME:
    lotus-miner log - Manage logging
 
 USAGE:
-   lotus-miner log command [command options]
+   lotus-miner log [command options]
+
+CATEGORY:
+   DEVELOPER
 
 COMMANDS:
    list       List log systems

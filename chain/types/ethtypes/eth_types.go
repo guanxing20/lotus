@@ -1056,6 +1056,19 @@ type EthBlockNumberOrHash struct {
 	RequireCanonical bool       `json:"requireCanonical,omitempty"`
 }
 
+func (e EthBlockNumberOrHash) String() string {
+	if e.PredefinedBlock != nil {
+		return *e.PredefinedBlock
+	}
+	if e.BlockNumber != nil {
+		return e.BlockNumber.Hex()
+	}
+	if e.BlockHash != nil {
+		return e.BlockHash.String()
+	}
+	return "{}"
+}
+
 func NewEthBlockNumberOrHashFromPredefined(predefined string) EthBlockNumberOrHash {
 	return EthBlockNumberOrHash{
 		PredefinedBlock:  &predefined,
@@ -1264,4 +1277,74 @@ type EthTxReceipt struct {
 	LogsBloom         EthBytes    `json:"logsBloom"`
 	Logs              []EthLog    `json:"logs"`
 	Type              EthUint64   `json:"type"`
+}
+
+const errorFunctionSelector = "\x08\xc3\x79\xa0" // Error(string)
+const panicFunctionSelector = "\x4e\x48\x7b\x71" // Panic(uint256)
+
+// panicErrorCodes maps Solidity panic codes to human-readable descriptions.
+var panicErrorCodes = map[uint64]string{
+	0x00: "Panic()",
+	0x01: "Assert()",
+	0x11: "ArithmeticOverflow()",
+	0x12: "DivideByZero()",
+	0x21: "InvalidEnumVariant()",
+	0x22: "InvalidStorageArray()",
+	0x31: "PopEmptyArray()",
+	0x32: "ArrayIndexOutOfBounds()",
+	0x41: "OutOfMemory()",
+	0x51: "CalledUninitializedFunction()",
+}
+
+// ParseEthRevert decodes an Ethereum ABI-encoded revert reason.
+// This handles both Error(string) and Panic(uint256) revert types.
+//
+// See https://docs.soliditylang.org/en/latest/control-structures.html#panic-via-assert-and-error-via-require
+func ParseEthRevert(ret []byte) string {
+	// If it's not long enough to contain an ABI encoded response, return immediately.
+	if len(ret) < 4+32 {
+		return EthBytes(ret).String()
+	}
+	switch string(ret[:4]) {
+	case panicFunctionSelector:
+		ret := ret[4 : 4+32]
+		// Read and check the code.
+		code, err := EthUint64FromBytes(ret)
+		if err != nil {
+			// If it's too big, just return the raw value.
+			codeInt := big.PositiveFromUnsignedBytes(ret)
+			return fmt.Sprintf("Panic(%s)", EthBigInt(codeInt).String())
+		}
+		if s, ok := panicErrorCodes[uint64(code)]; ok {
+			return s
+		}
+		return fmt.Sprintf("Panic(0x%x)", code)
+	case errorFunctionSelector:
+		ret := ret[4:]
+		retLen := EthUint64(len(ret))
+		// Read and check the offset.
+		offset, err := EthUint64FromBytes(ret[:32])
+		if err != nil {
+			break
+		}
+		if retLen < offset {
+			break
+		}
+
+		// Read and check the length.
+		if retLen-offset < 32 {
+			break
+		}
+		start := offset + 32
+		length, err := EthUint64FromBytes(ret[offset : offset+32])
+		if err != nil {
+			break
+		}
+		if retLen-start < length {
+			break
+		}
+		// Slice the error message.
+		return fmt.Sprintf("Error(%s)", ret[start:start+length])
+	}
+	return EthBytes(ret).String()
 }

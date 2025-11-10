@@ -529,7 +529,7 @@ func (s *SplitStore) Put(ctx context.Context, blk blocks.Block) error {
 }
 
 func (s *SplitStore) PutMany(ctx context.Context, blks []blocks.Block) error {
-	// filter identites
+	// filter identities
 	idcids := 0
 	for _, blk := range blks {
 		if isIdentiyCid(blk.Cid()) {
@@ -617,11 +617,6 @@ func (s *SplitStore) AllKeysChan(ctx context.Context) (<-chan cid.Cid, error) {
 	}()
 
 	return ch, nil
-}
-
-func (s *SplitStore) HashOnRead(enabled bool) {
-	s.hot.HashOnRead(enabled)
-	s.cold.HashOnRead(enabled)
 }
 
 func (s *SplitStore) View(ctx context.Context, cid cid.Cid, cb func([]byte) error) error {
