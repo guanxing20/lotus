@@ -9,6 +9,10 @@
 
 # UNRELEASED
 
+## 👌 Improvements
+- docs: fix outdated link in documentation ([#13436](https://github.com/filecoin-project/lotus/pull/13436))
+- docs: fix dead link in documentation ([#13437](https://github.com/filecoin-project/lotus/pull/13437))
+
 # UNRELEASED v1.34.2
 
 See https://github.com/filecoin-project/lotus/blob/release/v1.34.2/CHANGELOG.md 
